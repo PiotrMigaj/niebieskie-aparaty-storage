@@ -27,6 +27,10 @@ npx nuxi typecheck # TypeScript type check (use --legacy-peer-deps for installs)
 - `server/utils/dynamodb.ts` — singleton `DynamoDBDocumentClient`, same pattern.
 - `server/utils/uploadToken.ts` — token CRUD (`createUploadToken`, `validateUploadToken`, `deleteUploadToken`, `listActiveTokens`).
 
+### S3 folder conventions
+- Folders are zero-byte objects with a trailing slash key (`PutObjectCommand` with `Key: 'name/'`, `Body: ''`).
+- Folders are always at bucket root — never nested. `POST /api/folders` enforces this (strips leading/trailing slashes, rejects names containing `/`).
+
 ### Server API routes
 | Prefix | Auth | Purpose |
 |--------|------|---------|
@@ -52,3 +56,12 @@ S3 CORS must expose `ETag` header — see `SETUP.md`.
 
 ### SSR / hydration notes
 `selectedFolder` is set via a `watch` on `useFetch` data — it's always `null` during SSR. Wrap anything that depends on it in `<ClientOnly>`. The folder list active-class highlight uses an `onMounted` flag for the same reason.
+
+### DashboardPanel slot gotcha
+`UDashboardPanel` renders `#header`, `#body`, and `#footer` as **fallback content** of the default slot. If you pass any content outside a named slot template (e.g. a bare `<ClientOnly>` block), it becomes the default slot and **replaces all named slots**, making the navbar invisible. Always use `<template #body>` for panel content when also using `<template #header>`.
+
+### Mobile / responsive notes
+- `UDashboardSidebar` hides on mobile (`< lg`) and shows as a slideover. Set `mode="slideover"` and `:toggle="true"` explicitly on the sidebar.
+- `UDashboardNavbar` renders a hamburger toggle on mobile by default (`:toggle="true"`). Use built-in `title`/`icon` props instead of a custom `#left` slot to avoid displacing the toggle button.
+- CSS theme tokens: use hex values (`#000`, `#fff`) instead of CSS keywords (`black`, `white`) for `--ui-primary` etc. — keywords break Tailwind v4 opacity modifiers (`bg-primary/75`).
+- Explicitly set `--ui-text-inverted` and `--ui-bg-inverted` in `main.css` to ensure button text contrast on solid primary/neutral buttons.

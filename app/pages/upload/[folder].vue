@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center p-6">
+  <div class="min-h-screen flex items-center justify-center p-4 sm:p-6">
     <div class="w-full max-w-2xl">
 
       <!-- Error state -->
@@ -18,7 +18,8 @@
       <!-- Upload UI -->
       <div v-else class="space-y-6">
         <div>
-          <h1 class="text-2xl font-bold">Upload Files</h1>
+          <p class="text-xs text-muted uppercase tracking-widest mb-1">Niebieskie Aparaty</p>
+          <h1 class="font-serif text-2xl font-bold">Upload Files</h1>
           <p class="text-muted text-sm mt-1">Uploading to <span class="font-mono font-medium">{{ folderDisplay }}</span></p>
         </div>
 
@@ -27,7 +28,7 @@
           :preview="false"
           label="Drop files here or click to select"
           description="Any file type, up to any size"
-          class="w-full min-h-40"
+          class="w-full min-h-32 sm:min-h-40"
           @update:model-value="handleFiles"
         />
 
@@ -36,7 +37,7 @@
           <div
             v-for="item in items"
             :key="item.id"
-            class="border rounded-lg p-3 space-y-2"
+            class="border rounded-lg p-2 space-y-1.5 sm:p-3 sm:space-y-2"
           >
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-2 min-w-0">
@@ -64,7 +65,7 @@
           </div>
         </div>
 
-        <div v-if="items.length" class="flex justify-between items-center">
+        <div v-if="items.length" class="flex flex-wrap justify-between items-center gap-2">
           <p class="text-sm text-muted">{{ pendingCount }} file(s) pending</p>
           <UButton
             label="Upload All"

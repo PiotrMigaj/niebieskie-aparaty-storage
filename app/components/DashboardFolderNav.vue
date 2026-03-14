@@ -37,8 +37,17 @@
     </template>
 
     <ClientOnly>
+      <USeparator class="my-2" />
+      <UButton
+        icon="i-lucide-folder-plus"
+        label="Add Folder"
+        variant="ghost"
+        color="neutral"
+        block
+        class="justify-start"
+        @click="createModalOpen = true"
+      />
       <template v-if="selectedFolder">
-        <USeparator class="my-2" />
         <UButton
           icon="i-lucide-link"
           label="Generate Upload Link"
@@ -50,6 +59,7 @@
         />
       </template>
       <GenerateUploadLinkModal v-model:open="showModal" :folder="selectedFolder || ''" />
+      <CreateFolderModal v-model:open="createModalOpen" @created="onFolderCreated" />
     </ClientOnly>
   </div>
 </template>
@@ -57,10 +67,11 @@
 <script setup lang="ts">
 const selectedFolder = useSelectedFolder()
 const showModal = ref(false)
+const createModalOpen = ref(false)
 const mounted = ref(false)
 onMounted(() => { mounted.value = true })
 
-const { data: folders, status, error } = useFetch('/api/folders')
+const { data: folders, status, error, refresh } = useFetch('/api/folders')
 
 watch(folders, (val) => {
   if (val?.length && !selectedFolder.value) {
@@ -69,6 +80,11 @@ watch(folders, (val) => {
 }, { immediate: true })
 
 function selectFolder(prefix: string) {
+  selectedFolder.value = prefix
+}
+
+async function onFolderCreated(prefix: string) {
+  await refresh()
   selectedFolder.value = prefix
 }
 </script>

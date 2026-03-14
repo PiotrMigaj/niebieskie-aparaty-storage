@@ -1,10 +1,9 @@
 <template>
   <UDashboardGroup>
-    <UDashboardSidebar>
+    <UDashboardSidebar mode="slideover" :toggle="true">
       <template #header>
         <div class="flex items-center gap-2 px-4 py-3">
-          <UIcon name="i-lucide-cloud" class="size-6 text-primary" />
-          <span class="text-lg font-bold">Storage</span>
+          <span class="font-serif text-xl font-semibold">Niebieskie Aparaty</span>
         </div>
       </template>
 

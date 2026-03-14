@@ -1,6 +1,9 @@
 <template>
   <div class="flex h-full flex-col">
-    <div v-if="!selectedFolder" class="flex flex-1 items-center justify-center">
+    <div v-if="!selectedFolder && foldersLoading" class="flex flex-col gap-3 p-6">
+      <USkeleton v-for="i in 8" :key="i" class="h-12 w-full" />
+    </div>
+    <div v-else-if="!selectedFolder" class="flex flex-1 items-center justify-center">
       <UEmpty icon="i-lucide-folder-open" title="Select a folder" description="Choose a folder from the sidebar to view its files." />
     </div>
 
@@ -21,17 +24,17 @@
       <UEmpty icon="i-lucide-file-x" title="No files" description="This folder is empty." />
     </div>
 
-    <div v-else class="flex flex-col divide-y divide-neutral-200 dark:divide-neutral-800">
+    <div v-else class="flex flex-col divide-y divide-neutral-200">
       <div
         v-for="file in files"
         :key="file.key"
-        class="flex items-center gap-4 px-6 py-3 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-900"
+        class="flex items-center gap-3 px-3 py-3 transition-colors hover:bg-accented sm:gap-4 sm:px-6"
       >
         <UIcon :name="getFileIcon(file.extension)" class="size-5 shrink-0 text-neutral-500" />
 
         <div class="flex min-w-0 flex-1 flex-col">
           <span class="truncate text-sm font-medium">{{ file.name }}</span>
-          <span class="text-xs text-neutral-400">{{ file.size }} &middot; {{ formatDate(file.lastModified) }}</span>
+          <span class="truncate text-xs text-neutral-400"><span class="sm:inline hidden">{{ file.size }} &middot; </span>{{ formatDate(file.lastModified) }}</span>
         </div>
 
         <UButton
@@ -49,6 +52,7 @@
 
 <script setup lang="ts">
 const selectedFolder = useSelectedFolder()
+const foldersLoading = useFoldersLoading()
 const toast = useToast()
 const downloadingKey = ref<string | null>(null)
 

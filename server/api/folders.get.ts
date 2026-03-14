@@ -1,7 +1,18 @@
 import { ListObjectsV2Command } from '@aws-sdk/client-s3'
 
+async function sleep(time: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      console.log("Hello");
+      resolve();
+    }, time);
+  });
+}
+
 export default defineEventHandler(async (event) => {
   await requireUserSession(event)
+
+  // await sleep(5000);
 
   const config = useRuntimeConfig()
   const s3 = useS3Client()

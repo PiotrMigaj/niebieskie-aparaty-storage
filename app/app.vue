@@ -1,5 +1,6 @@
 <template>
   <UApp>
+    <NuxtLoadingIndicator color="#000" />
     <NuxtRouteAnnouncer />
     <NuxtLayout>
       <NuxtPage />

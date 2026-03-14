@@ -1,6 +1,9 @@
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-neutral-50 dark:bg-neutral-950">
+  <div class="flex min-h-screen items-center justify-center bg-white px-4">
     <UPageCard class="w-full max-w-md">
+      <div class="mb-4 text-center">
+        <h1 class="font-serif text-3xl font-bold">Niebieskie Aparaty</h1>
+      </div>
       <UAuthForm
         title="Admin Login"
         description="Sign in to access your storage dashboard."
@@ -31,14 +34,16 @@ const fields = [
     label: 'Username',
     type: 'text' as const,
     placeholder: 'Enter username',
-    required: true
+    required: true,
+    autocomplete: 'off'
   },
   {
     name: 'password',
     label: 'Password',
     type: 'password' as const,
     placeholder: 'Enter password',
-    required: true
+    required: true,
+    autocomplete: 'new-password'
   }
 ]
 
