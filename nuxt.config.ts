@@ -19,6 +19,7 @@ export default defineNuxtConfig({
     adminUsername: process.env.ADMIN_USERNAME,
     adminPassword: process.env.ADMIN_PASSWORD,
     dynamoTableName: process.env.DYNAMODB_TABLE_NAME,
+    allowableEmails: process.env.ALLOWABLE_EMAILS,
     session: {
       password: process.env.NUXT_SESSION_PASSWORD
     }

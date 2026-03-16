@@ -11,6 +11,7 @@
         :fields="fields"
         :submit="{ label: 'Sign In', icon: 'i-lucide-arrow-right' }"
         :loading="loading"
+        :providers="providers"
         @submit="(event) => onSubmit(event.data)"
       />
     </UPageCard>
@@ -25,8 +26,36 @@ definePageMeta({
 
 const toast = useToast()
 const router = useRouter()
+const route = useRoute()
 const { fetch: fetchSession } = useUserSession()
 const loading = ref(false)
+
+const providers = [
+  {
+    label: 'Sign in with Google',
+    icon: 'i-logos-google-icon',
+    color: 'white' as const,
+    onClick: () => navigateTo('/auth/google', { external: true })
+  }
+]
+
+onMounted(() => {
+  if (route.query.error === 'unauthorized') {
+    toast.add({
+      title: 'Access denied',
+      description: 'Your email is not allowed to sign in.',
+      color: 'error',
+      icon: 'i-lucide-alert-circle'
+    })
+  } else if (route.query.error === 'oauth') {
+    toast.add({
+      title: 'Google sign-in failed',
+      description: 'An error occurred during Google authentication.',
+      color: 'error',
+      icon: 'i-lucide-alert-circle'
+    })
+  }
+})
 
 const fields = [
   {
