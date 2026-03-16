@@ -49,13 +49,17 @@ S3 CORS must expose `ETag` header — see `SETUP.md`.
 ### Frontend structure
 - `app/layouts/dashboard.vue` — sidebar layout used by admin pages.
 - `app/layouts/default.vue` — bare layout used by the public upload page.
-- `app/composables/useSelectedFolder.ts` — `useState` shared between `DashboardFolderNav` and `FileList`. **Starts `null` on SSR**, so any component that conditionally renders based on it must be wrapped in `<ClientOnly>` to avoid hydration mismatches.
+- `app/composables/useFolders.ts` — encapsulates folder state (`selectedFolder` via `useState`), folder listing (`useFetch` with `key: 'folders'`), `createFolder`, and `generateUploadToken`. Called from `dashboard.vue` layout; page reads shared state via `useState`.
+- `app/composables/useFiles.ts` — encapsulates file listing and download for a given folder ref.
 - `app/composables/useMultipartUpload.ts` — manages upload queue (`items` ref), exposes `addFiles`, `removeFile`, `uploadAll`.
 - `app/components/GenerateUploadLinkModal.vue` — admin modal to create a token and copy the upload URL.
 - `app/pages/upload/[folder].vue` — public upload page; validates token on mount, then shows `UFileUpload` + custom file list with progress.
 
 ### SSR / hydration notes
-`selectedFolder` is set via a `watch` on `useFetch` data — it's always `null` during SSR. Wrap anything that depends on it in `<ClientOnly>`. The folder list active-class highlight uses an `onMounted` flag for the same reason.
+`selectedFolder` (via `useState`) is always `null` during SSR. Wrap anything that depends on it in `<ClientOnly>`. The folder list active-class highlight uses an `onMounted` flag for the same reason.
+- When a composable is called from multiple components (e.g. layout + page), `useFetch` without an explicit `key` creates separate fetches per call site. Use `useFetch(url, { key: 'name' })` to deduplicate.
+- `server: false` on `useFetch` causes hydration mismatches because SSR renders with `status='idle'` while client starts with `status='pending'`.
+- Components use props-down/events-up pattern: `DashboardFolderNav` and `FileList` receive data via props, emit events. API calls happen in the layout (`dashboard.vue`) and page (`index.vue`), not in components.
 
 ### DashboardPanel slot gotcha
 `UDashboardPanel` renders `#header`, `#body`, and `#footer` as **fallback content** of the default slot. If you pass any content outside a named slot template (e.g. a bare `<ClientOnly>` block), it becomes the default slot and **replaces all named slots**, making the navbar invisible. Always use `<template #body>` for panel content when also using `<template #header>`.

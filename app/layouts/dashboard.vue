@@ -8,7 +8,15 @@
       </template>
 
       <template #default>
-        <DashboardFolderNav />
+        <DashboardFolderNav
+          :folders="folders"
+          :selected-folder="selectedFolder"
+          :status="foldersStatus"
+          :error="foldersError"
+          @select-folder="selectFolder"
+          @open-create-modal="createModalOpen = true"
+          @open-upload-link-modal="uploadLinkModalOpen = true"
+        />
       </template>
 
       <template #footer>
@@ -32,12 +40,65 @@
     </UDashboardSidebar>
 
     <slot />
+
+    <CreateFolderModal
+      v-model:open="createModalOpen"
+      :loading="createFolderLoading"
+      @submit="handleCreateFolder"
+    />
+    <GenerateUploadLinkModal
+      v-model:open="uploadLinkModalOpen"
+      :folder="selectedFolder || ''"
+      :loading="uploadLinkLoading"
+      :generated-url="generatedUrl"
+      @generate="handleGenerateUploadLink"
+    />
   </UDashboardGroup>
 </template>
 
 <script setup lang="ts">
 const { user, clear } = useUserSession()
 const router = useRouter()
+const toast = useToast()
+
+const { folders, selectedFolder, status: foldersStatus, error: foldersError, selectFolder, createFolder, generateUploadToken } = useFolders()
+
+const createModalOpen = ref(false)
+const createFolderLoading = ref(false)
+const uploadLinkModalOpen = ref(false)
+const uploadLinkLoading = ref(false)
+const generatedUrl = ref('')
+
+watch(uploadLinkModalOpen, (val) => {
+  if (!val) generatedUrl.value = ''
+})
+
+async function handleCreateFolder(name: string) {
+  createFolderLoading.value = true
+  try {
+    await createFolder(name)
+    createModalOpen.value = false
+  } catch (e: unknown) {
+    const message = (e as { data?: { message?: string } })?.data?.message ?? 'Failed to create folder'
+    toast.add({ title: message, color: 'error' })
+  } finally {
+    createFolderLoading.value = false
+  }
+}
+
+async function handleGenerateUploadLink(payload: { folder: string; expiresIn: number }) {
+  uploadLinkLoading.value = true
+  try {
+    const token = await generateUploadToken(payload.folder, payload.expiresIn)
+    const folder = payload.folder.replace(/\/$/, '')
+    const origin = window.location.origin
+    generatedUrl.value = `${origin}/upload/${encodeURIComponent(folder)}?token=${token.tokenId}`
+  } catch {
+    toast.add({ title: 'Failed to generate link', color: 'error' })
+  } finally {
+    uploadLinkLoading.value = false
+  }
+}
 
 async function handleLogout() {
   await $fetch('/api/auth/logout', { method: 'POST' })

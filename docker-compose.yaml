@@ -1,0 +1,30 @@
+services:
+  nuxt-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: niebieskie-aparaty-storage:1.0
+    ports:
+      - "${NITRO_PORT:-3333}:${NITRO_PORT:-3333}"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+    environment:
+      - NUXT_SESSION_PASSWORD=${NUXT_SESSION_PASSWORD}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - BUCKET_NAME=${BUCKET_NAME}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - DYNAMODB_TABLE_NAME=${DYNAMODB_TABLE_NAME}
+      - NODE_ENV=production
+      - NITRO_PORT=${NITRO_PORT}
+    restart: unless-stopped
+    command: ["node", ".output/server/index.mjs"]
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL

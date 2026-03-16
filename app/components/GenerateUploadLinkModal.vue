@@ -29,13 +29,13 @@
           v-if="!generatedUrl"
           label="Generate Link"
           :loading="loading"
-          @click="generate"
+          @click="emit('generate', { folder: folder, expiresIn: selectedExpiry })"
         />
         <UButton
           v-else
           label="Generate Another"
           variant="outline"
-          @click="reset"
+          @click="resetUrl"
         />
       </div>
     </template>
@@ -45,9 +45,15 @@
 <script setup lang="ts">
 const props = defineProps<{
   folder: string
+  loading: boolean
+  generatedUrl: string
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
+
+const emit = defineEmits<{
+  generate: [payload: { folder: string; expiresIn: number }]
+}>()
 
 const expiryOptions = [
   { label: '1 hour', value: 3600 },
@@ -57,10 +63,7 @@ const expiryOptions = [
   { label: '7 days', value: 604800 }
 ]
 
-const toast = useToast()
 const selectedExpiry = ref(86400)
-const loading = ref(false)
-const generatedUrl = ref('')
 const copied = ref(false)
 
 const folderDisplay = computed(() => props.folder.replace(/\/$/, '') || '(root)')
@@ -69,37 +72,18 @@ const selectedExpiryLabel = computed(() =>
   expiryOptions.find(o => o.value === selectedExpiry.value)?.label?.toLowerCase() ?? ''
 )
 
-async function generate() {
-  loading.value = true
-  try {
-    const token = await $fetch('/api/upload-tokens', {
-      method: 'POST',
-      body: { folder: props.folder, expiresIn: selectedExpiry.value }
-    })
-
-    const folder = props.folder.replace(/\/$/, '')
-    const origin = window.location.origin
-    generatedUrl.value = `${origin}/upload/${encodeURIComponent(folder)}?token=${token.tokenId}`
-  } catch {
-    toast.add({ title: 'Failed to generate link', color: 'error' })
-  } finally {
-    loading.value = false
-  }
-}
-
 async function copyUrl() {
-  await navigator.clipboard.writeText(generatedUrl.value)
+  await navigator.clipboard.writeText(props.generatedUrl)
   copied.value = true
   setTimeout(() => (copied.value = false), 2000)
 }
 
-function reset() {
-  generatedUrl.value = ''
+function resetUrl() {
   copied.value = false
 }
 
 function handleClose() {
-  reset()
+  copied.value = false
   open.value = false
 }
 </script>

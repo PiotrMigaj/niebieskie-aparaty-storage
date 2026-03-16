@@ -43,7 +43,7 @@
           color="neutral"
           size="sm"
           :loading="downloadingKey === file.key"
-          @click="downloadFile(file.key, file.name)"
+          @click="emit('download', file.key, file.name)"
         />
       </div>
     </div>
@@ -51,16 +51,18 @@
 </template>
 
 <script setup lang="ts">
-const selectedFolder = useSelectedFolder()
-const foldersLoading = useFoldersLoading()
-const toast = useToast()
-const downloadingKey = ref<string | null>(null)
+defineProps<{
+  files?: { key: string; name: string; size: string; lastModified: string; extension?: string }[] | null
+  selectedFolder: string | null
+  foldersLoading: boolean
+  status: string
+  error?: Error | null
+  downloadingKey: string | null
+}>()
 
-const { data: files, status, error } = useFetch('/api/files', {
-  query: { folder: selectedFolder },
-  watch: [selectedFolder],
-  immediate: true
-})
+const emit = defineEmits<{
+  download: [key: string, name: string]
+}>()
 
 function getFileIcon(ext: string | undefined): string {
   if (!ext) return 'i-lucide-file'
@@ -103,29 +105,5 @@ function formatDate(dateStr: string): string {
     hour: '2-digit',
     minute: '2-digit'
   })
-}
-
-async function downloadFile(key: string, name: string) {
-  downloadingKey.value = key
-  try {
-    const { url } = await $fetch('/api/download', { query: { key } })
-    const link = document.createElement('a')
-    link.href = url
-    link.download = name
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
-  catch {
-    toast.add({
-      title: 'Download failed',
-      description: 'Could not generate download link.',
-      color: 'error',
-      icon: 'i-lucide-alert-circle'
-    })
-  }
-  finally {
-    downloadingKey.value = null
-  }
 }
 </script>

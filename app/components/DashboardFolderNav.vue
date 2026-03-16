@@ -28,7 +28,7 @@
         block
         class="justify-start"
         :class="{ 'bg-primary/10! text-primary!': mounted && selectedFolder === folder.prefix }"
-        @click="selectFolder(folder.prefix)"
+        @click="emit('selectFolder', folder.prefix)"
       />
 
       <div v-if="!folders?.length" class="p-2 text-center text-sm text-neutral-400">
@@ -45,7 +45,7 @@
         color="neutral"
         block
         class="justify-start"
-        @click="createModalOpen = true"
+        @click="emit('openCreateModal')"
       />
       <template v-if="selectedFolder">
         <UButton
@@ -55,36 +55,27 @@
           color="neutral"
           block
           class="justify-start"
-          @click="showModal = true"
+          @click="emit('openUploadLinkModal')"
         />
       </template>
-      <GenerateUploadLinkModal v-model:open="showModal" :folder="selectedFolder || ''" />
-      <CreateFolderModal v-model:open="createModalOpen" @created="onFolderCreated" />
     </ClientOnly>
   </div>
 </template>
 
 <script setup lang="ts">
-const selectedFolder = useSelectedFolder()
-const showModal = ref(false)
-const createModalOpen = ref(false)
+defineProps<{
+  folders?: { name: string; prefix: string }[] | null
+  selectedFolder: string | null
+  status: string
+  error?: Error | null
+}>()
+
+const emit = defineEmits<{
+  selectFolder: [prefix: string]
+  openCreateModal: []
+  openUploadLinkModal: []
+}>()
+
 const mounted = ref(false)
 onMounted(() => { mounted.value = true })
-
-const { data: folders, status, error, refresh } = useFetch('/api/folders')
-
-watch(folders, (val) => {
-  if (val?.length && !selectedFolder.value) {
-    selectedFolder.value = val[0]!.prefix
-  }
-}, { immediate: true })
-
-function selectFolder(prefix: string) {
-  selectedFolder.value = prefix
-}
-
-async function onFolderCreated(prefix: string) {
-  await refresh()
-  selectedFolder.value = prefix
-}
 </script>

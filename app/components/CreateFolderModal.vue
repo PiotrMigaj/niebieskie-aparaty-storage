@@ -6,7 +6,7 @@
           v-model="folderName"
           placeholder="e.g. wedding-2026"
           autofocus
-          @keydown.enter="create"
+          @keydown.enter="submit"
         />
       </UFormField>
     </template>
@@ -14,7 +14,7 @@
     <template #footer>
       <div class="flex justify-end gap-2">
         <UButton variant="ghost" label="Cancel" @click="handleClose" />
-        <UButton label="Create" :loading="loading" @click="create" />
+        <UButton label="Create" :loading="loading" @click="submit" />
       </div>
     </template>
   </UModal>
@@ -22,11 +22,16 @@
 
 <script setup lang="ts">
 const open = defineModel<boolean>('open', { default: false })
-const emit = defineEmits<{ created: [prefix: string] }>()
 
-const toast = useToast()
+defineProps<{
+  loading: boolean
+}>()
+
+const emit = defineEmits<{
+  submit: [name: string]
+}>()
+
 const folderName = ref('')
-const loading = ref(false)
 const validationError = ref('')
 
 watch(open, (val) => {
@@ -47,22 +52,9 @@ function validate(): boolean {
   return true
 }
 
-async function create() {
+function submit() {
   if (!validate()) return
-  loading.value = true
-  try {
-    const result = await $fetch('/api/folders', {
-      method: 'POST',
-      body: { name: folderName.value.trim() }
-    })
-    emit('created', result.prefix)
-    open.value = false
-  } catch (e: unknown) {
-    const message = (e as { data?: { message?: string } })?.data?.message ?? 'Failed to create folder'
-    toast.add({ title: message, color: 'error' })
-  } finally {
-    loading.value = false
-  }
+  emit('submit', folderName.value.trim())
 }
 
 function reset() {
