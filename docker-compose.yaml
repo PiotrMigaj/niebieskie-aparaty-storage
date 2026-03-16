@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: niebieskie-aparaty-storage:1.0
+    image: migi987/niebieskie-aparaty-storage:1.0
     ports:
       - "${NITRO_PORT:-3333}:${NITRO_PORT:-3333}"
     deploy:
