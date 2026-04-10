@@ -55,11 +55,13 @@
               />
             </div>
 
-            <UProgress
-              v-if="item.status === 'uploading'"
-              :value="item.progress"
-              size="sm"
-            />
+            <div v-if="item.status === 'uploading'" class="space-y-0.5">
+              <div class="flex justify-between text-xs text-muted">
+                <span>Uploading…</span>
+                <span>{{ item.progress }}%</span>
+              </div>
+              <UProgress :value="item.progress" size="sm" />
+            </div>
 
             <p v-if="item.status === 'error'" class="text-xs text-error">{{ item.error }}</p>
           </div>

@@ -1,29 +1,36 @@
 services:
   nuxt-app:
+    image: migi987/niebieskie-aparaty-storage:2.0
     build:
       context: .
       dockerfile: Dockerfile
-    image: migi987/niebieskie-aparaty-storage:1.0
     ports:
       - "${NITRO_PORT:-3333}:${NITRO_PORT:-3333}"
+    environment:
+      # Nuxt runtime config (NUXT_ prefix required for runtime override)
+      - NUXT_SESSION_PASSWORD=${NUXT_SESSION_PASSWORD}
+      - NUXT_ADMIN_USERNAME=${ADMIN_USERNAME}
+      - NUXT_ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - NUXT_ALLOWABLE_EMAILS=${ALLOWABLE_EMAILS}
+      # AWS
+      - NUXT_AWS_REGION=${AWS_REGION}
+      - NUXT_AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - NUXT_AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - NUXT_BUCKET_NAME=${BUCKET_NAME}
+      - NUXT_DYNAMO_TABLE_NAME=${DYNAMODB_TABLE_NAME}
+      # Google OAuth (nuxt-auth-utils convention)
+      - NUXT_OAUTH_GOOGLE_CLIENT_ID=${OAUTH_GOOGLE_CLIENT_ID}
+      - NUXT_OAUTH_GOOGLE_CLIENT_SECRET=${OAUTH_GOOGLE_CLIENT_SECRET}
+      # Node
+      - NODE_ENV=production
+      - NITRO_PORT=${NITRO_PORT}
+    restart: unless-stopped
+    command: ["node", ".output/server/index.mjs"]
     deploy:
       resources:
         limits:
           cpus: "0.5"
           memory: 512M
-    environment:
-      - NUXT_SESSION_PASSWORD=${NUXT_SESSION_PASSWORD}
-      - AWS_REGION=${AWS_REGION}
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - BUCKET_NAME=${BUCKET_NAME}
-      - ADMIN_USERNAME=${ADMIN_USERNAME}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - DYNAMODB_TABLE_NAME=${DYNAMODB_TABLE_NAME}
-      - NODE_ENV=production
-      - NITRO_PORT=${NITRO_PORT}
-    restart: unless-stopped
-    command: ["node", ".output/server/index.mjs"]
     security_opt:
       - no-new-privileges
     cap_drop:
